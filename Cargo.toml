@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "agent",
+    "agent_lib",
+    "lib" 
+]
