@@ -8,6 +8,6 @@ pub enum Error {
     ChecksumError {
         expected: u32,
         actual: u32,
-        data: Vec<u8>
-    }
+        data: Vec<u8>,
+    },
 }
