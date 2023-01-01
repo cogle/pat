@@ -1,6 +1,7 @@
+use anyhow::Result;
 use chrono::{DateTime, Utc};
 use rppal::i2c::I2c;
-use anyhow::Result;
+use serde::Serialize;
 
 use crate::error;
 use std::fmt;
@@ -21,12 +22,13 @@ fn to_fahrenhiet(temperature: f32) -> f32 {
     32.0 + (9.0 / 5.0) * temperature
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize)]
 pub enum TemperatureUnits {
     Celsuis,
     Fahrenheit,
 }
 
+#[derive(Serialize)]
 pub struct Temperature {
     temperature: f32,
     unit: TemperatureUnits,
@@ -63,6 +65,7 @@ impl std::fmt::Display for Temperature {
     }
 }
 
+#[derive(Serialize)]
 pub enum Humidity {
     Relative(f32),
 }
@@ -74,11 +77,13 @@ impl std::fmt::Display for Humidity {
         }
     }
 }
+
 pub struct HTU21DF {
     comm_channel: I2c,
     temperature_unit: TemperatureUnits,
 }
 
+#[derive(Serialize)]
 pub struct HTU21DFSensorData {
     temperature: Temperature,
     humidity: Humidity,
@@ -99,8 +104,10 @@ impl HTU21DF {
     pub fn new(temperature_unit: TemperatureUnits) -> Self {
         let mut comm_channel = I2c::new().unwrap();
         comm_channel.set_slave_address(DEVICE_ADDRESS).unwrap();
-        
-        comm_channel.write(&[SOFT_RESET_REGISTER_ADDRESS as u8]).unwrap();
+
+        comm_channel
+            .write(&[SOFT_RESET_REGISTER_ADDRESS as u8])
+            .unwrap();
 
         Self {
             comm_channel,
@@ -187,10 +194,7 @@ impl HTU21DF {
         Ok(Humidity::Relative(converted_value))
     }
 
-    fn calculate_temperature(
-        self: &Self,
-        data: &[u8],
-    ) -> Result<Temperature> {
+    fn calculate_temperature(self: &Self, data: &[u8]) -> Result<Temperature> {
         let (signal_value, checksum_value) = self.parse_data_buffer(&data);
         Self::validate(&data, checksum_value)?;
 

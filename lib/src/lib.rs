@@ -1,4 +1,4 @@
+mod communication;
 mod config;
-mod publisher;
 
-pub use publisher::Publisher;
+pub use communication::Connection;
