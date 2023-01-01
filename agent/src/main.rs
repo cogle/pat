@@ -1,4 +1,4 @@
-use agent_lib::{TemperatureUnits, HTU21DF};
+use agent_lib::{TemperatureUnits, HTU21DF, Payload};
 use anyhow::Result;
 use lib::Connection;
 use std::{thread, time};
@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
     loop {
         let sensor_data = agent.read_sensors().unwrap();
         println!("{}", sensor_data);
-        connection.publish(&topic, sensor_data).await?;
+        connection.publish(&topic, Payload::HTU21DSData(sensor_data)).await?;
         thread::sleep(sleep_time);
     }
 }

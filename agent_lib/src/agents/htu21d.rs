@@ -30,7 +30,7 @@ pub enum TemperatureUnits {
 
 #[derive(Serialize)]
 pub struct Temperature {
-    temperature: f32,
+    value: f32,
     unit: TemperatureUnits,
 }
 
@@ -38,7 +38,7 @@ impl Temperature {
     pub fn convert_to_celcuis(self: &mut Self) {
         match self.unit {
             TemperatureUnits::Fahrenheit => {
-                self.temperature = to_celcuis(self.temperature);
+                self.value = to_celcuis(self.value);
                 self.unit = TemperatureUnits::Celsuis;
             }
             _ => {}
@@ -48,7 +48,7 @@ impl Temperature {
     pub fn convert_to_fahrenhiet(self: &mut Self) {
         match self.unit {
             TemperatureUnits::Celsuis => {
-                self.temperature = to_fahrenhiet(self.temperature);
+                self.value = to_fahrenhiet(self.value);
                 self.unit = TemperatureUnits::Fahrenheit;
             }
             _ => {}
@@ -59,8 +59,8 @@ impl Temperature {
 impl std::fmt::Display for Temperature {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.unit {
-            TemperatureUnits::Celsuis => write!(f, "{:.2}°C", self.temperature),
-            TemperatureUnits::Fahrenheit => write!(f, "{:.2}°F", self.temperature),
+            TemperatureUnits::Celsuis => write!(f, "{:.2}°C", self.value),
+            TemperatureUnits::Fahrenheit => write!(f, "{:.2}°F", self.value),
         }
     }
 }
@@ -207,7 +207,7 @@ impl HTU21DF {
         };
 
         Ok(Temperature {
-            temperature: converted_value,
+            value: converted_value,
             unit: self.temperature_unit,
         })
     }
