@@ -4,3 +4,7 @@ members = [
     "agent_lib",
     "lib" 
 ]
+
+[workspace.dependencies]
+anyhow = "1.0.68"
+serde = { version = "1.0.91", features = ["derive"] }

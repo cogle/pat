@@ -1,5 +1,5 @@
-use serde::Serialize;
 use crate::agents::HTU21DFSensorData;
+use serde::Serialize;
 
 #[derive(Serialize)]
 pub enum Payload {
