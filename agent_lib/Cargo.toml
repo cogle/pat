@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+embedded-hal = "0.2.7"
 toml = "0.5"
-rppal = "0.13.1"
 thiserror = "1.0.37"
 chrono = { version = "0.4.23", features = ["serde"] }
 anyhow.workspace = true

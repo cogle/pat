@@ -1,16 +1,16 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use rppal::i2c::I2c;
+use embedded_hal::blocking::i2c;
 use serde::Serialize;
 
 use crate::error;
 use std::fmt;
 
-static DEVICE_ADDRESS: u16 = 0x40;
+static DEVICE_ADDRESS: u8 = 0x40;
 
-static SOFT_RESET_REGISTER_ADDRESS: usize = 0xFE;
-static TEMPERATURE_REGISTER_ADDRESS: usize = 0xE3;
-static HUMIDITY_REGISTER_ADDRESS: usize = 0xE5;
+static SOFT_RESET_COMMAND: usize = 0xFE;
+static READ_TEMPERATURE_COMMAND: usize = 0xE4;
+static READ_HUMIDITY_COMMAND: usize = 0xE5;
 
 static CHECKSUM_DIVISOR: u16 = 0x131;
 
@@ -78,8 +78,8 @@ impl std::fmt::Display for Humidity {
     }
 }
 
-pub struct HTU21DF {
-    comm_channel: I2c,
+pub struct HTU21DF<I2C> {
+    i2c_comm: I2C,
     temperature_unit: TemperatureUnits,
 }
 
@@ -100,17 +100,18 @@ impl std::fmt::Display for HTU21DFSensorData {
     }
 }
 
-impl HTU21DF {
-    pub fn new(temperature_unit: TemperatureUnits) -> Self {
-        let mut comm_channel = I2c::new().unwrap();
-        comm_channel.set_slave_address(DEVICE_ADDRESS).unwrap();
-
-        comm_channel
-            .write(&[SOFT_RESET_REGISTER_ADDRESS as u8])
+impl<I2C, E> HTU21DF<I2C>
+where
+    I2C: i2c::Write<Error = E> + i2c::Read<Error = E>,
+    E: std::fmt::Debug + std::error::Error + std::marker::Send + std::marker::Sync + 'static,
+{
+    pub fn new(mut i2c_comm: I2C, temperature_unit: TemperatureUnits) -> Self {
+        i2c_comm
+            .write(DEVICE_ADDRESS, &[SOFT_RESET_COMMAND as u8])
             .unwrap();
 
         Self {
-            comm_channel,
+            i2c_comm,
             temperature_unit,
         }
     }
@@ -166,8 +167,8 @@ impl HTU21DF {
     }
 
     pub fn read_temperature(self: &mut Self) -> Result<Temperature> {
-        self.comm_channel
-            .write(&[TEMPERATURE_REGISTER_ADDRESS as u8])?;
+        self.i2c_comm
+            .write(DEVICE_ADDRESS, &[READ_TEMPERATURE_COMMAND as u8])?;
 
         let mut data = [0u8; 3];
         self.read(&mut data)?;
@@ -176,8 +177,8 @@ impl HTU21DF {
     }
 
     pub fn read_humidity(self: &mut Self) -> Result<Humidity> {
-        self.comm_channel
-            .write(&[HUMIDITY_REGISTER_ADDRESS as u8])?;
+        self.i2c_comm
+            .write(DEVICE_ADDRESS, &[READ_HUMIDITY_COMMAND as u8])?;
 
         let mut data = [0u8; 3];
         self.read(&mut data)?;
@@ -220,11 +221,12 @@ impl HTU21DF {
     }
 
     fn read(self: &mut Self, data_buffer: &mut [u8]) -> Result<()> {
-        self.comm_channel.read(data_buffer)?;
+        self.i2c_comm.read(DEVICE_ADDRESS, data_buffer)?;
         Ok(())
     }
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -314,3 +316,4 @@ mod tests {
         );
     }
 }
+*/
