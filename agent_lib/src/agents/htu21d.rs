@@ -9,7 +9,7 @@ use std::fmt;
 static DEVICE_ADDRESS: u8 = 0x40;
 
 static SOFT_RESET_COMMAND: usize = 0xFE;
-static READ_TEMPERATURE_COMMAND: usize = 0xE4;
+static READ_TEMPERATURE_COMMAND: usize = 0xE3;
 static READ_HUMIDITY_COMMAND: usize = 0xE5;
 
 static CHECKSUM_DIVISOR: u16 = 0x131;
