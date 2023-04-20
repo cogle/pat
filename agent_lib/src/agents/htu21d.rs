@@ -226,52 +226,80 @@ where
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
+    use embedded_hal::blocking::i2c::{Read, Write};
+
+    struct UnitTestMockI2C;
+
+    #[derive(Debug)]
+    struct MockError;
+
+    impl std::error::Error for MockError {}
+
+    impl std::fmt::Display for MockError {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "")
+        }
+    }
+
+    impl Write for UnitTestMockI2C {
+        type Error = MockError;
+        fn write(&mut self, _addr: u8, _output: &[u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
+    }
+
+    impl Read for UnitTestMockI2C {
+        type Error = MockError;
+        fn read(&mut self, _address: u8, _buffer: &mut [u8]) -> std::result::Result<(), Self::Error> {
+            Ok(())
+        }
+    }
+
     use super::*;
     static TEMPERATURE_EPSILON: f32 = 0.2;
     static RELATIVE_HUMIDITY_EPSILON: f32 = 0.2;
 
     #[test]
     fn crc_checksum_test_1() {
-        let checksum = HTU21DF::checksum_calc(&[0xDC]);
+        let checksum = HTU21DF::<UnitTestMockI2C>::checksum_calc(&[0xDC]);
         assert_eq!(checksum, 0x79);
     }
 
     #[test]
     fn crc_checksum_test_2() {
-        let checksum = HTU21DF::checksum_calc(&[0x68, 0x3A]);
+        let checksum = HTU21DF::<UnitTestMockI2C>::checksum_calc(&[0x68, 0x3A]);
         assert_eq!(checksum, 0x7C);
     }
 
     #[test]
     fn crc_checksum_test_3() {
-        let checksum = HTU21DF::checksum_calc(&[0x4E, 0x85]);
+        let checksum = HTU21DF::<UnitTestMockI2C>::checksum_calc(&[0x4E, 0x85]);
         assert_eq!(checksum, 0x6B);
     }
 
     #[test]
     fn checksum_validate_test_1() {
-        let result = HTU21DF::validate(&[0x68, 0x3A], 0x7C);
+        let result = HTU21DF::<UnitTestMockI2C>::validate(&[0x68, 0x3A], 0x7C);
         assert!(result.is_ok());
     }
 
     #[test]
     fn checksum_validate_test_2() {
-        let result = HTU21DF::validate(&[0x4E, 0x85], 0x6B);
+        let result = HTU21DF::<UnitTestMockI2C>::validate(&[0x4E, 0x85], 0x6B);
         assert!(result.is_ok());
     }
 
     #[test]
     fn checksum_validate_negative_test_1() {
-        let result = HTU21DF::validate(&[0x4E, 0x85], 0x7C);
+        let result = HTU21DF::<UnitTestMockI2C>::validate(&[0x4E, 0x85], 0x7C);
         assert!(result.is_err());
     }
 
     #[test]
     fn checksum_validate_negative_test_2() {
-        let result = HTU21DF::validate(&[0x68, 0x3A], 0x6B);
+        let result = HTU21DF::<UnitTestMockI2C>::validate(&[0x68, 0x3A], 0x6B);
         assert!(result.is_err());
     }
 
@@ -280,7 +308,7 @@ mod tests {
         let input = 0x683A;
         let expected = 24.7;
 
-        let temp = HTU21DF::temperature_formula(input as f32);
+        let temp = HTU21DF::<UnitTestMockI2C>::temperature_formula(input as f32);
         assert!(
             (temp - expected).abs() <= TEMPERATURE_EPSILON,
             "Expected {} but got {}",
@@ -294,7 +322,7 @@ mod tests {
         let input = 0x4E85;
         let expected = 32.2;
 
-        let relative_humidity = HTU21DF::relative_humidity_formula(input as f32);
+        let relative_humidity = HTU21DF::<UnitTestMockI2C>::relative_humidity_formula(input as f32);
         assert!(
             (relative_humidity - expected).abs() <= RELATIVE_HUMIDITY_EPSILON,
             "Expected {} but got {}",
@@ -307,7 +335,7 @@ mod tests {
     fn signal_to_humdity_test_2() {
         let input = 0x7C80;
         let expected = 54.8;
-        let relative_humidity = HTU21DF::relative_humidity_formula(input as f32);
+        let relative_humidity = HTU21DF::<UnitTestMockI2C>::relative_humidity_formula(input as f32);
         assert!(
             (relative_humidity - expected).abs() <= RELATIVE_HUMIDITY_EPSILON,
             "Expected {} but got {}",
@@ -315,5 +343,5 @@ mod tests {
             relative_humidity
         );
     }
+
 }
-*/
