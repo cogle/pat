@@ -35,6 +35,10 @@ pub struct Temperature {
 }
 
 impl Temperature {
+    pub fn get_temperature(self: &Self) -> (f32, TemperatureUnits) {
+        (self.value, self.unit)
+    }
+
     pub fn convert_to_celcuis(self: &mut Self) {
         match self.unit {
             TemperatureUnits::Fahrenheit => {
@@ -230,7 +234,18 @@ where
 mod tests {
     use embedded_hal::blocking::i2c::{Read, Write};
 
-    struct UnitTestMockI2C;
+    const READ_VEC_LEN: usize = 3;
+
+    #[derive(Default)]
+    struct UnitTestMockI2C {
+        mock_read_value: Vec<u8>,
+    }
+
+    impl UnitTestMockI2C {
+        pub fn set_read_value(&mut self, read_value: Vec<u8>) {
+            self.mock_read_value = read_value;
+        }
+    }
 
     #[derive(Debug)]
     struct MockError;
@@ -252,14 +267,27 @@ mod tests {
 
     impl Read for UnitTestMockI2C {
         type Error = MockError;
-        fn read(&mut self, _address: u8, _buffer: &mut [u8]) -> std::result::Result<(), Self::Error> {
-            Ok(())
+        fn read(
+            &mut self,
+            _address: u8,
+            buffer: &mut [u8],
+        ) -> std::result::Result<(), Self::Error> {
+            match self.mock_read_value.len() {
+                READ_VEC_LEN => {
+                    buffer.copy_from_slice(&self.mock_read_value);
+                    Ok(())
+                }
+                _ => Err(MockError),
+            }
         }
     }
 
     use super::*;
-    static TEMPERATURE_EPSILON: f32 = 0.2;
-    static RELATIVE_HUMIDITY_EPSILON: f32 = 0.2;
+    static PRECISION_EPSILON: f32 = 0.1;
+
+    fn close_enough(a: f32, b: f32) -> bool {
+        (a - b).abs() <= PRECISION_EPSILON
+    }
 
     #[test]
     fn crc_checksum_test_1() {
@@ -310,7 +338,7 @@ mod tests {
 
         let temp = HTU21DF::<UnitTestMockI2C>::temperature_formula(input as f32);
         assert!(
-            (temp - expected).abs() <= TEMPERATURE_EPSILON,
+            close_enough(temp, expected),
             "Expected {} but got {}",
             expected,
             temp
@@ -320,11 +348,11 @@ mod tests {
     #[test]
     fn signal_to_humdity_test_1() {
         let input = 0x4E85;
-        let expected = 32.2;
+        let expected = 32.3;
 
         let relative_humidity = HTU21DF::<UnitTestMockI2C>::relative_humidity_formula(input as f32);
         assert!(
-            (relative_humidity - expected).abs() <= RELATIVE_HUMIDITY_EPSILON,
+            close_enough(relative_humidity, expected),
             "Expected {} but got {}",
             expected,
             relative_humidity
@@ -337,11 +365,56 @@ mod tests {
         let expected = 54.8;
         let relative_humidity = HTU21DF::<UnitTestMockI2C>::relative_humidity_formula(input as f32);
         assert!(
-            (relative_humidity - expected).abs() <= RELATIVE_HUMIDITY_EPSILON,
+            close_enough(relative_humidity, expected),
             "Expected {} but got {}",
             expected,
             relative_humidity
         );
     }
 
+    #[test]
+    fn read_temperature_test_1() {
+        let expected = 24.7;
+
+        let mut unit_test_mock_i2c = UnitTestMockI2C::default();
+        unit_test_mock_i2c.set_read_value(vec![0x68, 0x3A, 0x7C]);
+
+        let mut test_device = HTU21DF::new(unit_test_mock_i2c, TemperatureUnits::Celsuis);
+        let temperature_read = test_device.read_temperature();
+
+        assert!(temperature_read.is_ok());
+
+        let (temp, _) = temperature_read.unwrap().get_temperature();
+
+        assert!(
+            close_enough(temp, expected),
+            "Expected {} but got {}",
+            expected,
+            temp
+        );
+    }
+
+    #[test]
+    fn read_humidity_test_1() {
+        let expected = 32.3;
+
+        let mut unit_test_mock_i2c = UnitTestMockI2C::default();
+        unit_test_mock_i2c.set_read_value(vec![0x4E, 0x85, 0x6B]);
+
+        let mut test_device = HTU21DF::new(unit_test_mock_i2c, TemperatureUnits::Celsuis);
+        let humidity_read = test_device.read_humidity();
+
+        assert!(humidity_read.is_ok());
+
+        let humidity = match humidity_read.unwrap() {
+            Humidity::Relative(value) => value,
+        };
+
+        assert!(
+            close_enough(humidity, expected),
+            "Expected {} but got {}",
+            expected,
+            humidity
+        );
+    }
 }
