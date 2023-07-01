@@ -4,8 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-toml = "0.5"
-serde_json = "1.0.91"
-zenoh = "0.7.0-rc"
+serde_json = "1.0.97"
+zenoh = "0.7.2-rc"
 anyhow.workspace = true 
 serde = { workspace = true,  features = ["derive"] }

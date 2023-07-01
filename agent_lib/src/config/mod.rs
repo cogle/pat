@@ -1,3 +1,3 @@
-mod agent_conf;
+mod agent_config;
 
-pub use self::agent_conf::*;
+pub use self::agent_config::*;
