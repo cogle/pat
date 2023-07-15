@@ -1,4 +1,4 @@
-use agent_lib::{Payload, TemperatureUnits, HTU21DF};
+use sensor_lib::{Payload, TemperatureUnits, HTU21DF};
 use anyhow::Result;
 use lib::Connection;
 use rppal::i2c::I2c;

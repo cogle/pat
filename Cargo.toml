@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "agent",
-    "agent_lib",
+    "sensor_lib",
     "lib" 
 ]
 

@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 rppal = { version= "0.14.1", features = ["hal"] } 
-agent_lib = { path ="../agent_lib" }
+sensor_lib = { path ="../sensor_lib" }
 lib = { path ="../lib" }
 async-std = "1.12.0"
 anyhow.workspace = true

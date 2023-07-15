@@ -17,23 +17,11 @@ dependencies = [
 name = "agent"
 version = "0.1.0"
 dependencies = [
- "agent_lib",
  "anyhow",
  "async-std",
  "lib",
  "rppal",
-]
-
-[[package]]
-name = "agent_lib"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "embedded-hal 0.2.7",
- "serde",
- "serde_json",
- "thiserror",
+ "sensor_lib",
 ]
 
 [[package]]
@@ -1887,6 +1875,18 @@ name = "semver"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bebd363326d05ec3e2f532ab7660680f3b02130d780c299bca73469d521bc0ed"
+
+[[package]]
+name = "sensor_lib"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "embedded-hal 0.2.7",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
 
 [[package]]
 name = "serde"
