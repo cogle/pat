@@ -1,7 +1,7 @@
-use sensor_lib::{Payload, TemperatureUnits, HTU21DF};
 use anyhow::Result;
 use lib::Connection;
 use rppal::i2c::I2c;
+use sensor_lib::{Payload, TemperatureUnits, HTU21DF};
 use std::{thread, time};
 
 #[async_std::main]

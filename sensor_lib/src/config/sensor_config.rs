@@ -3,13 +3,13 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct HTU21DFTemperatureConfig {
-    polling_freq: u32
+    polling_freq: u32,
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct HTU21DFHumidityConfig {
-    polling_freq: u32
+    polling_freq: u32,
 }
 
 #[derive(Deserialize)]
@@ -24,9 +24,8 @@ struct HTU21DFConfig {
 #[derive(Deserialize)]
 #[serde(tag = "type")]
 enum Sensor {
-    HTU21DF(HTU21DFConfig)
+    HTU21DF(HTU21DFConfig),
 }
-
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,7 +34,6 @@ pub struct SensorConfig {
     zenoh_hub_endpoint: String,
     sensors: Option<Vec<Sensor>>,
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -96,12 +94,11 @@ mod tests {
 
         let device_config = match htu21df_sensor {
             Sensor::HTU21DF(conf) => Some(conf),
-            _ => None
-        }; 
+            _ => None,
+        };
 
         assert!(device_config.is_some());
 
         let device_config = device_config.unwrap();
-
     }
 }

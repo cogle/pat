@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-
 enum DeviceType {
     Hub,
-    RemoteNode
+    RemoteNode,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -11,4 +10,3 @@ enum DeviceType {
 struct Config {
     device_name: String,
 }
-

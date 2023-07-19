@@ -1,8 +1,6 @@
 # TODO
 - Change the code to use the `embedded_hal` library for I3C comms.
     - Mock I2C
-- Maybe consider a restructing of the code.
-    - Rename Agents to Sensor and keep agent as the root level node for the distributed sensors
 - Setup something so that its possible to test the code.
     - I2C Stub
 - Look into docker or WASM for running the code.

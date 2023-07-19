@@ -4,7 +4,11 @@ use embedded_hal::blocking::i2c;
 use serde::Serialize;
 
 use crate::error;
+use crate::sensors::Pollable;
+
 use std::fmt;
+
+use super::poll::PollSelectable;
 
 static DEVICE_ADDRESS: u8 = 0x40;
 
@@ -20,6 +24,19 @@ fn to_celcuis(temperature: f32) -> f32 {
 
 fn to_fahrenhiet(temperature: f32) -> f32 {
     32.0 + (9.0 / 5.0) * temperature
+}
+
+pub enum HTU21DFPollable {
+    PollTemperature,
+    PollHumidity,
+}
+
+impl PollSelectable for HTU21DFPollable {
+    type Output = HTU21DFPollable;
+
+    fn value(self) -> Self::Output {
+        self
+    }
 }
 
 #[derive(Clone, Copy, Serialize)]
@@ -227,6 +244,17 @@ where
     fn read(self: &mut Self, data_buffer: &mut [u8]) -> Result<()> {
         self.i2c_comm.read(DEVICE_ADDRESS, data_buffer)?;
         Ok(())
+    }
+}
+
+impl<I2C> Pollable for HTU21DF<I2C> {
+    type Selection = HTU21DFPollable;
+
+    fn poll(self: &mut Self, selection: Self::Selection) {
+        match selection.value() {
+            HTU21DFPollable::PollHumidity => {}
+            HTU21DFPollable::PollTemperature => {}
+        }
     }
 }
 

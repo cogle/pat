@@ -1,7 +1,6 @@
 use crate::sensors::HTU21DFSensorData;
 use serde::Serialize;
 
-
 #[derive(Serialize)]
 pub enum Payload {
     #[serde(rename = "htu21dsData")]
