@@ -8,7 +8,7 @@ use crate::sensors::Pollable;
 
 use std::fmt;
 
-use super::poll::PollSelectable;
+use super::poll::{PollResult, PollSelectable};
 
 static DEVICE_ADDRESS: u8 = 0x40;
 
@@ -29,6 +29,7 @@ fn to_fahrenhiet(temperature: f32) -> f32 {
 pub enum HTU21DFPollable {
     PollTemperature,
     PollHumidity,
+    PollAll,
 }
 
 impl PollSelectable for HTU21DFPollable {
@@ -118,6 +119,20 @@ impl std::fmt::Display for HTU21DFSensorData {
             "[{}] Temperature: {}\tHumidity: {}",
             self.timestamp, self.temperature, self.humidity
         )
+    }
+}
+
+pub enum HTU21DFResult {
+    PollTemperatureResult(Temperature),
+    PollHumidityResult(Humidity),
+    PollAllResult(HTU21DFSensorData),
+}
+
+impl PollResult for HTU21DFResult {
+    type Output = HTU21DFResult;
+
+    fn value(self) -> Self::Output {
+        self
     }
 }
 
@@ -247,13 +262,25 @@ where
     }
 }
 
-impl<I2C> Pollable for HTU21DF<I2C> {
+impl<I2C, E> Pollable for HTU21DF<I2C>
+where
+    I2C: i2c::Write<Error = E> + i2c::Read<Error = E>,
+    E: std::fmt::Debug + std::error::Error + std::marker::Send + std::marker::Sync + 'static,
+{
+    type Output = HTU21DFResult;
     type Selection = HTU21DFPollable;
 
-    fn poll(self: &mut Self, selection: Self::Selection) {
+    fn poll(self: &mut Self, selection: Self::Selection) -> Result<Self::Output> {
         match selection.value() {
-            HTU21DFPollable::PollHumidity => {}
-            HTU21DFPollable::PollTemperature => {}
+            HTU21DFPollable::PollHumidity => self
+                .read_humidity()
+                .map(|hum| HTU21DFResult::PollHumidityResult(hum)),
+            HTU21DFPollable::PollTemperature => self
+                .read_temperature()
+                .map(|temp| HTU21DFResult::PollTemperatureResult(temp)),
+            HTU21DFPollable::PollAll => self
+                .read_sensors()
+                .map(|all| HTU21DFResult::PollAllResult(all)),
         }
     }
 }
