@@ -134,6 +134,21 @@ impl PollResult for HTU21DFResult {
     fn value(self) -> Self::Output {
         self
     }
+
+    fn value_as_ref(&self) -> &Self::Output {
+        self
+    }
+}
+
+
+impl std::fmt::Display for HTU21DFResult {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.value_as_ref() {
+            Self::PollTemperatureResult(temp) => temp.fmt(f),
+            Self::PollHumidityResult(hum) => hum.fmt(f),
+            Self::PollAllResult(all) => all.fmt(f)
+        }
+    }
 }
 
 impl<I2C, E> HTU21DF<I2C>
@@ -267,10 +282,11 @@ where
     I2C: i2c::Write<Error = E> + i2c::Read<Error = E>,
     E: std::fmt::Debug + std::error::Error + std::marker::Send + std::marker::Sync + 'static,
 {
+    type Error = anyhow::Error;
     type Output = HTU21DFResult;
     type Selection = HTU21DFPollable;
 
-    fn poll(self: &mut Self, selection: Self::Selection) -> Result<Self::Output> {
+    fn poll(self: &mut Self, selection: Self::Selection) -> Result<Self::Output, Self::Error> {
         match selection.value() {
             HTU21DFPollable::PollHumidity => self
                 .read_humidity()

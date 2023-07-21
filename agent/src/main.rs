@@ -1,8 +1,9 @@
 use anyhow::Result;
 use lib::Connection;
 use rppal::i2c::I2c;
-use sensor_lib::{Payload, TemperatureUnits, HTU21DF};
+use sensor_lib::{Payload, TemperatureUnits, HTU21DF, Pollable, HTU21DFPollable};
 use std::{thread, time};
+
 
 #[async_std::main]
 async fn main() -> Result<()> {
@@ -11,17 +12,19 @@ async fn main() -> Result<()> {
 
     let i2c_comm = I2c::new().unwrap();
 
-    let mut agent = HTU21DF::new(i2c_comm, TemperatureUnits::Fahrenheit);
+    let mut sensor = HTU21DF::new(i2c_comm, TemperatureUnits::Fahrenheit);
 
     let topic = String::from("test/temperature");
     connection.create_publisher(topic.clone()).await;
 
     loop {
-        let sensor_data = agent.read_sensors().unwrap();
+        let sensor_data = sensor.poll(HTU21DFPollable::PollAll).unwrap();
         println!("{}", sensor_data);
+        /* 
         connection
             .publish(&topic, Payload::HTU21DSData(sensor_data))
             .await?;
+        */
         thread::sleep(sleep_time);
     }
 }
