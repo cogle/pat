@@ -10,3 +10,4 @@ thiserror = "1.0.37"
 chrono = { version = "0.4.23", features = ["serde"] }
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
+lib = { path ="../lib" }

@@ -20,11 +20,9 @@ async fn main() -> Result<()> {
     loop {
         let sensor_data = sensor.poll(HTU21DFPollable::PollAll).unwrap();
         println!("{}", sensor_data);
-        /* 
         connection
             .publish(&topic, Payload::HTU21DSData(sensor_data))
             .await?;
-        */
         thread::sleep(sleep_time);
     }
 }

@@ -1883,6 +1883,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "embedded-hal 0.2.7",
+ "lib",
  "serde",
  "serde_json",
  "thiserror",

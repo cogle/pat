@@ -6,6 +6,8 @@ use serde::Serialize;
 use crate::error;
 use crate::sensors::Pollable;
 
+use lib::{to_celcuis, to_fahrenhiet};
+
 use std::fmt;
 
 use super::poll::{PollResult, PollSelectable};
@@ -17,14 +19,6 @@ static READ_TEMPERATURE_COMMAND: usize = 0xE3;
 static READ_HUMIDITY_COMMAND: usize = 0xE5;
 
 static CHECKSUM_DIVISOR: u16 = 0x131;
-
-fn to_celcuis(temperature: f32) -> f32 {
-    (temperature - 32.0) * (5.0 / 9.0)
-}
-
-fn to_fahrenhiet(temperature: f32) -> f32 {
-    32.0 + (9.0 / 5.0) * temperature
-}
 
 pub enum HTU21DFPollable {
     PollTemperature,
